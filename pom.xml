@@ -43,7 +43,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.example.Calculadora</mainClass>
+                            <mainClass>org.example.ValidadorSenha</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
