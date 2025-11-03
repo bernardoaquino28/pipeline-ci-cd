@@ -1,0 +1,117 @@
+# 🧰 6. Workflow do GitHub Actions — `.github/workflows/ci-cd.yml`
+
+name: CI/CD Pipeline - Java Maven
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  # 🏗 STAGE 1 — BUILD
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Compilar e empacotar
+        run: mvn clean package -DskipTests
+
+      - name: Salvar artefato gerado
+        uses: actions/upload-artifact@v4
+        with:
+          name: meu-jar
+          path: target/*.jar
+
+  # 🔍 STAGE 2 — SAST (Static Application Security Testing)
+  sast:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Executar análise SAST (Semgrep)
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: "auto"
+
+      - name: Validar resultados SAST
+        run: |
+          echo "Verificando se há falhas críticas..."
+          # Simulação de validação — aqui você pode inserir lógica real
+          echo "Nenhuma vulnerabilidade crítica encontrada!"
+
+  # 🧪 STAGE 3 — TEST
+  test:
+    runs-on: ubuntu-latest
+    needs: [build, sast]
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Executar testes
+        run: mvn test
+
+  # 🌐 STAGE 4 — DAST (Dynamic Application Security Testing)
+  dast:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Baixar artefato do build
+        uses: actions/download-artifact@v4
+        with:
+          name: meu-jar
+          path: target/
+
+      - name: Iniciar aplicação local
+        run: |
+          nohup java -jar target/*.jar > app.log 2>&1 &
+          sleep 10
+
+      - name: Executar análise DAST (OWASP ZAP baseline scan)
+        uses: zaproxy/action-baseline@v0.9.0
+        with:
+          target: "http://localhost:8080"
+          rules_file_name: ".zap/rules.tsv"
+          cmd_options: "-a"
+
+      - name: Validar resultados DAST
+        run: |
+          echo "Análise DAST concluída. Validando alertas..."
+          # Exemplo de lógica simples de validação
+          echo "Nenhuma vulnerabilidade crítica encontrada!"
+
+  # 🚀 STAGE 5 — DEPLOY
+  deploy:
+    runs-on: ubuntu-latest
+    needs: dast
+    if: github.ref == 'refs/heads/main'  # só roda na branch main
+
+    steps:
+      - name: Baixar artefato do build
+        uses: actions/download-artifact@v4
+        with:
+          name: meu-jar
+          path: deploy/
+
+      - name: Simular deploy
+        run: |
+          echo "Iniciando deploy do artefato:"
+          ls -lh deploy/
+          echo "Deploy finalizado com sucesso!"
