@@ -1,5 +1,3 @@
-# 🧰 6. Workflow do GitHub Actions — `.github/workflows/ci-cd.yml`
-
 name: CI/CD Pipeline - Java Maven
 
 on:
@@ -10,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  # 🏗 STAGE 1 — BUILD
+  # STAGE 1 — BUILD
   build:
     runs-on: ubuntu-latest
     steps:
@@ -32,7 +30,7 @@ jobs:
           name: meu-jar
           path: target/*.jar
 
-  # 🔍 STAGE 2 — SAST (Static Application Security Testing)
+  # STAGE 2 — SAST (Static Application Security Testing)
   sast:
     runs-on: ubuntu-latest
     needs: build
@@ -51,7 +49,7 @@ jobs:
           # Simulação de validação — aqui você pode inserir lógica real
           echo "Nenhuma vulnerabilidade crítica encontrada!"
 
-  # 🧪 STAGE 3 — TEST
+  # STAGE 3 — TEST
   test:
     runs-on: ubuntu-latest
     needs: [build, sast]
@@ -68,7 +66,7 @@ jobs:
       - name: Executar testes
         run: mvn test
 
-  # 🌐 STAGE 4 — DAST (Dynamic Application Security Testing)
+  # STAGE 4 — DAST (Dynamic Application Security Testing)
   dast:
     runs-on: ubuntu-latest
     needs: test
@@ -97,7 +95,7 @@ jobs:
           # Exemplo de lógica simples de validação
           echo "Nenhuma vulnerabilidade crítica encontrada!"
 
-  # 🚀 STAGE 5 — DEPLOY
+  # STAGE 5 — DEPLOY
   deploy:
     runs-on: ubuntu-latest
     needs: dast
